@@ -149,7 +149,6 @@ exports.issueBook = async (req, res) => {
       transactionType: "borrowed",
     });
 
-    console.log("transaction =====:>> ", transaction);
     return response(res, false, 200, "book issued succesfully!", issueBook);
   } catch (error) {
     return serverError(res, error);
@@ -199,7 +198,7 @@ exports.returnBook = async (req, res) => {
       dueDate: null,
       transactionType: "returned",
     });
-    console.log("transaction =====:>> ", transaction);
+
     return response(res, false, 200, "book returned succesfully!", returnBook);
   } catch (error) {
     return serverError(res, error);

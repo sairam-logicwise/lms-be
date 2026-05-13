@@ -11,7 +11,7 @@ exports.validator = (schema) => {
       if (req.files) {
         inputValues.files = req.files;
       }
-      // console.log('inputValues >>>', inputValues);
+
       const { error } = await schema.validateAsync(inputValues, {
         allowUnknown: true,
         abortEarly: false,

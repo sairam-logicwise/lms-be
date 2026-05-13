@@ -16,7 +16,7 @@ exports.signIn = async (req, res) => {
     }
     const token = await makeJwtToken(
       { id: userExist._id, role: userExist.role },
-      "30 day"
+      "20m"
     );
     return response(res, false, 200, "Login Successful.", {
       name: userExist.name,
