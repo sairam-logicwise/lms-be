@@ -4,6 +4,7 @@ const {
   createUserSchema,
   updateUserSchema,
   deleteSchema,
+  getUsersSchema,
 } = require("../validators/userValidator");
 const {
   createUser,
@@ -17,7 +18,7 @@ const router = Router();
 
 router.use(authGuard([USER_TYPE.ADMIN]))
 
-router.get("/", getUsers);
+router.get("/", validator(getUsersSchema), getUsers);
 
 router.post("/", validator(createUserSchema), createUser);
 

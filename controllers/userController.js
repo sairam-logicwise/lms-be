@@ -133,12 +133,31 @@ exports.deleteUser = async (req, res) => {
 
 exports.getUsers = async (req, res) => {
   try {
-    const users = await userModel
-      .find({ role: "USER" }, { userName: 1, name: 1, email: 1, contact: 1 })
-      .sort({ createdAt: -1 })
-      .lean();
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-    return response(res, false, 200, "success", users);
+    const [users, totalUsers] = await Promise.all([
+      userModel
+        .find({ role: "USER" }, { userName: 1, name: 1, email: 1, contact: 1 })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      userModel.countDocuments({ role: "USER" }),
+    ]);
+
+    const totalPages = Math.ceil(totalUsers / limit);
+
+    return response(res, false, 200, "success", {
+      users,
+      pagination: {
+        totalUsers,
+        totalPages,
+        currentPage: page,
+        limit,
+      },
+    });
   } catch (error) {
     return serverError(res, error);
   }

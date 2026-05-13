@@ -82,7 +82,7 @@ paths:
               name: Test User
               userName: user123
               email: test123@yopmail.com
-              password: Tagline@123
+              password: Logicwise@123
               contact: 9897876545
         required: true
       responses:
@@ -103,6 +103,20 @@ paths:
       description: Get Users
       security:
         - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Page number
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Users per page
+          schema:
+            type: integer
+            default: 10
+            enum: [10, 20, 50, 100]
       responses:
         "200":
           description: Successful operation
@@ -155,7 +169,7 @@ paths:
                 name: Test User
                 userName: user123
                 email: test123@yopmail.com
-                password: Tagline@123
+                password: Logicwise@123
                 contact: 9897876545
         required: true
       responses:
@@ -446,6 +460,20 @@ paths:
       description: Get transaction by logged in user
       security:
         - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Page number
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Transactions per page
+          schema:
+            type: integer
+            default: 10
+            enum: [10, 20, 50, 100]
       responses:
         "200":
           description: Successful operation

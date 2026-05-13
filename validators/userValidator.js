@@ -61,3 +61,8 @@ exports.updateUserSchema = Joi.object({
 exports.deleteSchema = Joi.object({
   userId: Joi.string().hex().length(24).required(),
 });
+
+exports.getUsersSchema = Joi.object({
+  page: Joi.number().min(1).default(1).optional(),
+  limit: Joi.number().min(1).max(100).default(10).optional(),
+});
