@@ -18,6 +18,11 @@ exports.createUser = async (req, res) => {
     if (isEmailExists) {
       return response(res, true, 400, "Email already exists");
     }
+
+    const isContactExists = await userModel.findOne({ contact: contact }).lean();
+    if (isContactExists) {
+      return response(res, true, 400, "Phone number already exists");
+    }
     const encPassword = bcrypt.hashSync(password, 10);
     const user = new userModel({
       role: "USER",
@@ -72,6 +77,15 @@ exports.updateUser = async (req, res) => {
       const isEmailExists = await userModel.findOne({ email }).lean();
       if (isEmailExists && isEmailExists._id.toString() !== userId.toString()) {
         return response(res, true, 400, "Email already exists");
+      }
+    }
+    if (contact) {
+      const isContactExists = await userModel.findOne({ contact }).lean();
+      if (
+        isContactExists &&
+        isContactExists._id.toString() !== userId.toString()
+      ) {
+        return response(res, true, 400, "Phone number already exists");
       }
     }
     const updateFields = {
