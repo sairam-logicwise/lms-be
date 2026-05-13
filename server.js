@@ -12,6 +12,7 @@ const swaggerDocument = YAML.parse(modifiedFile);
 require('./config/database')
 const port = process.env.PORT || 3000
 const routes = require('./routes/index');
+const { setupHealthCheckCron } = require('./helpers/cron');
 
 app.use(cors())
 
@@ -25,6 +26,13 @@ app.get('/', (req, res) => {
   return res.status(200).send(`Welcome to lms.`)
 })
 
+app.get('/health', (req, res) => {
+  return res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
 app.use('/api', routes)
 
-app.listen(port, () => console.log(`Server listening on port ${port}!`))
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}!`);
+  setupHealthCheckCron();
+});
