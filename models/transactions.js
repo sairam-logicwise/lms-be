@@ -10,6 +10,7 @@ const transactionSchema = new mongoose.Schema(
       type: mongoose.Types?.ObjectId,
       default: "",
     },
+    serialNumber: String,
     dueDate: Date,
     transactionType: { type: String, enum: ["borrowed", "returned"] },
   },

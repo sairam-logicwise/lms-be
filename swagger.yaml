@@ -215,9 +215,17 @@ paths:
                   type: string
                 author:
                   type: string
+                totalCopies:
+                  type: number
+                copies:
+                  type: array
+                  items:
+                    type: string
             example:
               name: Test Book
               author: Some Author
+              totalCopies: 2
+              copies: ["SN001", "SN002"]
         required: true
       responses:
         "200":
@@ -275,9 +283,17 @@ paths:
                   type: string
                 author:
                   type: string
+                totalCopies:
+                  type: number
+                copies:
+                  type: array
+                  items:
+                    type: string
             example:
               name: Test Book
               author: Some Author
+              totalCopies: 2
+              copies: ["SN001", "SN002"]
 
         required: true
       responses:
@@ -343,10 +359,13 @@ paths:
                 userId:
                   type: string
                   format: hexadecimal
+                serialNumber:
+                  type: string
                 dueDate:
                   type: string
             example:
               userId: 658546b8cd949886b518f94f
+              serialNumber: SN001
               dueDate: "2023-04-24T10:26:54.644Z"
         required: true
       responses:
@@ -376,6 +395,18 @@ paths:
           schema:
             type: string
             format: hexadecimal
+      requestBody:
+        description: Return book requestBody
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                serialNumber:
+                  type: string
+            example:
+              serialNumber: SN001
+        required: true
       responses:
         "200":
           description: Successful operation

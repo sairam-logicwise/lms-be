@@ -14,6 +14,7 @@ const {
   createBookSchema,
   issueBookSchema,
   updateBookSchema,
+  returnBookSchema,
 } = require("../validators/bookValidator");
 const { authGuard } = require("../middlewares/authGuard");
 const { USER_TYPE } = require("../config/config");
@@ -47,7 +48,7 @@ router.post(
 router.post(
   "/return/:bookId",
   authGuard([USER_TYPE.ADMIN]),
-  validator(bookSchema),
+  validator(returnBookSchema),
   returnBook
 );
 router.get("/dashboard", authGuard([USER_TYPE.ADMIN]), dailyBookList);

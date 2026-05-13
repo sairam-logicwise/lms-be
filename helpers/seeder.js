@@ -60,10 +60,20 @@ const seedBooks = async () => {
     for (let i = 1; i <= 55; i++) {
       const author = authors[Math.floor(Math.random() * authors.length)];
       const genre = genres[Math.floor(Math.random() * genres.length)];
+      const numCopies = Math.floor(Math.random() * 5) + 1;
+      const copies = [];
+      for (let j = 1; j <= numCopies; j++) {
+        copies.push({
+          serialNumber: `SN-${i}-${j}-${Math.floor(Math.random() * 1000)}`,
+          isAvailable: true,
+        });
+      }
       books.push({
         name: `${genre} Book ${i}`,
         author: `${author}`,
-        currentAvailability: true
+        totalCopies: numCopies,
+        copies: copies,
+        currentAvailability: true,
       });
     }
 

@@ -6,14 +6,21 @@ const { default: mongoose } = require("mongoose");
 
 exports.createBook = async (req, res) => {
   try {
-    const { name, author } = req?.body;
-    const findBook = await bookModel.findOne({ name });
+    const { name, author, totalCopies, copies } = req?.body;
+    // const findBook = await bookModel.findOne({ name });
 
-    // if (findBook) {
-    //   return response(res, true, 400, "Book name already exists!!");
-    // }
+    const copiesData = copies.map((sn) => ({
+      serialNumber: sn,
+      isAvailable: true,
+    }));
 
-    const book = await bookModel.create({ name, author });
+    const book = await bookModel.create({
+      name,
+      author,
+      totalCopies: totalCopies || copies.length,
+      copies: copiesData,
+      currentAvailability: copiesData.length > 0,
+    });
     return response(res, false, 201, "Book created succesfully!", book);
   } catch (error) {
     return serverError(res, error);
@@ -22,17 +29,22 @@ exports.createBook = async (req, res) => {
 
 exports.updateBook = async (req, res) => {
   try {
-    const { name, author } = req?.body;
+    const { name, author, totalCopies, copies } = req?.body;
     const { bookId } = req?.params;
-    const findBook = await bookModel.findOne({ name });
 
-    // if (findBook) {
-    //   return response(res, true, 400, "Book name already exists!!");
-    // }
+    const updateData = { name, author };
+    if (totalCopies) updateData.totalCopies = totalCopies;
+    if (copies) {
+      updateData.copies = copies.map((sn) => ({
+        serialNumber: sn,
+        isAvailable: true,
+      }));
+      updateData.currentAvailability = copies.length > 0;
+    }
 
     const book = await bookModel.findOneAndUpdate(
       { _id: new mongoose.Types.ObjectId(bookId) },
-      { name, author },
+      updateData,
       { new: true }
     );
     return response(res, false, 201, "Book updated succesfully!", book);
@@ -88,15 +100,21 @@ exports.getBooks = async (req, res) => {
 exports.issueBook = async (req, res) => {
   try {
     const { bookId } = req?.params;
-    const { userId, dueDate } = req?.body;
+    const { userId, dueDate, serialNumber } = req?.body;
 
     const book = await bookModel.findOne({
       _id: new mongoose.Types.ObjectId(bookId),
-      currentAvailability: true,
+      "copies.serialNumber": serialNumber,
+      "copies.isAvailable": true,
     });
 
     if (!book) {
-      return response(res, true, 400, "No book found!");
+      return response(
+        res,
+        true,
+        400,
+        "No book found or specific copy is not available!"
+      );
     }
 
     const user = await userModel.findOne({
@@ -108,14 +126,25 @@ exports.issueBook = async (req, res) => {
     }
 
     const issueBook = await bookModel.findOneAndUpdate(
-      { _id: new mongoose.Types.ObjectId(bookId) },
-      { currentAvailability: false },
+      {
+        _id: new mongoose.Types.ObjectId(bookId),
+        "copies.serialNumber": serialNumber,
+      },
+      { $set: { "copies.$.isAvailable": false } },
       { new: true }
     );
+
+    // Update overall availability
+    const anyAvailable = issueBook.copies.some((c) => c.isAvailable);
+    if (!anyAvailable) {
+      issueBook.currentAvailability = false;
+      await issueBook.save();
+    }
 
     const transaction = await transactionModel.create({
       userId: new mongoose.Types.ObjectId(userId),
       bookId,
+      serialNumber,
       dueDate,
       transactionType: "borrowed",
     });
@@ -130,17 +159,20 @@ exports.issueBook = async (req, res) => {
 exports.returnBook = async (req, res) => {
   try {
     const { bookId } = req?.params;
+    const { serialNumber } = req?.body;
 
     const book = await bookModel.findOne({
       _id: new mongoose.Types.ObjectId(bookId),
+      "copies.serialNumber": serialNumber,
     });
 
     if (!book) {
-      return response(res, true, 400, "No book found!");
+      return response(res, true, 400, "No book found with this serial number!");
     }
 
     const borrowedTransaction = await transactionModel.findOne({
       bookId: new mongoose.Types.ObjectId(bookId),
+      serialNumber,
       transactionType: "borrowed",
     });
 
@@ -149,14 +181,21 @@ exports.returnBook = async (req, res) => {
     }
 
     const returnBook = await bookModel.findOneAndUpdate(
-      { _id: new mongoose.Types.ObjectId(bookId) },
-      { currentAvailability: true },
+      {
+        _id: new mongoose.Types.ObjectId(bookId),
+        "copies.serialNumber": serialNumber,
+      },
+      {
+        $set: { "copies.$.isAvailable": true },
+        currentAvailability: true,
+      },
       { new: true }
     );
 
     const transaction = await transactionModel.create({
       userId: borrowedTransaction?.userId,
       bookId,
+      serialNumber,
       dueDate: null,
       transactionType: "returned",
     });
