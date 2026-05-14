@@ -68,8 +68,15 @@ exports.deleteBook = async (req, res) => {
       return response(res, true, 400, "Please enter a valid bookId!");
     }
 
-    if (findBook.currentAvailability === false) {
-      return response(res, false, 400, "Can not delete issued book!");
+    const hasIssuedCopy = findBook.copies.some((copy) => !copy.isAvailable);
+
+    if (hasIssuedCopy) {
+      return response(
+        res,
+        false,
+        400,
+        "Cannot delete book as some copies are currently issued!"
+      );
     }
     await transactionModel.deleteMany({ bookId });
     const book = await bookModel.deleteOne({
